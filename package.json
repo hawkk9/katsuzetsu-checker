@@ -17,6 +17,7 @@
     "openai": "^3.2.1",
     "postcss": "8.4.23",
     "react": "18.2.0",
+    "react-diff-viewer-continued": "^3.2.6",
     "react-dom": "18.2.0",
     "react-media-recorder": "^1.6.5",
     "tailwindcss": "3.3.2"
