@@ -20,7 +20,13 @@ const Diff = ({ transcription }) => {
   if (transcription === undefined) {
     return <div>何か話してください</div>
   }
-  return <ReactDiffViewer oldValue={oldText} newValue={newText} splitView={true} />
+  return <ReactDiffViewer
+    oldValue={oldText}
+    newValue={transcription}
+    splitView={true}
+    showDiffOnly={false}
+    hideLineNumbers={true}
+  />
 }
 
 export default function Home() {
