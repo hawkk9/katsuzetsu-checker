@@ -11,31 +11,28 @@ const ReactMediaRecorder = dynamic(() => import('react-media-recorder').then((mo
 const inter = Inter({ subsets: ['latin'] })
 
 
-const oldText = `生麦生米生卵
-隣の客はよく柿食う客だ`;
-const newText = `生麦生米生卵
-隣の客はよく柿食う客や`;
-
-const Diff = ({ transcription }) => {
-  if (transcription === undefined) {
-    return <div>何か話してください</div>
-  }
-  return <ReactDiffViewer
-    oldValue={oldText}
-    newValue={transcription}
-    splitView={true}
-    showDiffOnly={false}
-    hideLineNumbers={true}
-  />
-}
 
 export default function Home() {
   const [transcription, setTranscription] = useState();
+  const [script, setScript ] = useState('隣の客はよく柿食う客だ');
 
-  const onStop = async (blobUrl, blob) => {
+  const renderDiffOrScriptInputArea = ({ oldText, newText }) => {
+    if (newText === undefined) {
+      return <textarea value={oldText} onChange={onChangeScript} />
+    }
+    return <ReactDiffViewer
+      oldValue={oldText}
+      newValue={newText}
+      splitView={true}
+      showDiffOnly={false}
+      hideLineNumbers={true}
+    />
+  }
+
+  const onStopRecord = async (blobUrl, blob) => {
     const file = new File(
       [blob],
-      'audio.mp3',
+      'voice.mp3',
       { type: blob.type }
     );
 
@@ -52,15 +49,18 @@ export default function Home() {
     const json = await response.json();
     setTranscription(json.transcription);
   };
+  const onChangeScript = (e) => {
+    setScript(e.target.value);
+  };
 
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
     >
       <div>
-        <Diff transcription={transcription} />
+        {renderDiffOrScriptInputArea({ oldText: script, newText: transcription })}
         <ReactMediaRecorder
-          onStop={onStop}
+          onStop={onStopRecord}
           video={false}
           render={({ status, startRecording, stopRecording, mediaBlobUrl }) => (
             <div>
