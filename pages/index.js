@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { Inter } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import ReactDiffViewer from 'react-diff-viewer-continued';
+import { BsFillMicFill } from 'react-icons/bs'
+import {
+  Box,
+  Container,
+  Textarea,
+  Button,
+  Stack,
+  Icon,
+  Text,
+} from '@chakra-ui/react';
 
 const ReactMediaRecorder = dynamic(() => import('react-media-recorder').then((mod) => mod.ReactMediaRecorder), {
   ssr: false,
 });
-
-
-const inter = Inter({ subsets: ['latin'] });
 
 const canStartStatuses = ['idle', 'stopped'];
 
@@ -19,7 +25,7 @@ export default function Home() {
 
   const renderDiffOrScriptInputArea = ({ oldText, newText }) => {
     if (newText === undefined) {
-      return <textarea value={oldText} onChange={onChangeScript} />
+      return <Textarea value={oldText} onChange={onChangeScript} />
     }
     return <ReactDiffViewer
       oldValue={oldText}
@@ -55,10 +61,15 @@ export default function Home() {
   };
 
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div>
+    <Container maxW={'3xl'}>
+      <Stack
+        as={Box}
+        textAlign={'center'}
+        spacing={{ base: 8, md: 14 }}
+        py={{ base: 20, md: 36 }}>
+        <Text color={'gray.500'}>
+          読み上げに挑戦する言葉を入力してください。
+        </Text>
         {renderDiffOrScriptInputArea({ oldText: script, newText: transcription })}
         <ReactMediaRecorder
           onStop={onStopRecord}
@@ -67,13 +78,25 @@ export default function Home() {
             <div>
               {
                 canStartStatuses.includes(status) ?
-                  <button className="btn btn-green" onClick={startRecording}>Start Recording</button>
-                  : <button className="btn btn-red" onClick={stopRecording}>Stop Recording</button>
+                  <Button
+                    onClick={startRecording}
+                    colorScheme={'whatsapp'}
+                    leftIcon={<Icon as={BsFillMicFill} />}
+                  >
+                    読み上げ開始
+                  </Button>
+                  : <Button
+                    onClick={stopRecording}
+                    colorScheme={'red'}
+                    leftIcon={<Icon as={BsFillMicFill} />}
+                  >
+                    読み上げ終了
+                  </Button>
               }
             </div>
           )}
         />
-      </div>
-    </main>
+      </Stack>
+    </Container>
   )
 };
