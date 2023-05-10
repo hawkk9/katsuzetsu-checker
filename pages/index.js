@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Inter } from 'next/font/google'
-import dynamic from 'next/dynamic'
+import { Inter } from 'next/font/google';
+import dynamic from 'next/dynamic';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 
 const ReactMediaRecorder = dynamic(() => import('react-media-recorder').then((mod) => mod.ReactMediaRecorder), {
@@ -8,8 +8,9 @@ const ReactMediaRecorder = dynamic(() => import('react-media-recorder').then((mo
 });
 
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] });
 
+const canStartStatuses = ['idle', 'stopped'];
 
 
 export default function Home() {
@@ -64,8 +65,11 @@ export default function Home() {
           video={false}
           render={({ status, startRecording, stopRecording, mediaBlobUrl }) => (
             <div>
-              <button className="btn btn-green" onClick={startRecording}>Start Recording</button>
-              <button className="btn btn-red" onClick={stopRecording}>Stop Recording</button>
+              {
+                canStartStatuses.includes(status) ?
+                  <button className="btn btn-green" onClick={startRecording}>Start Recording</button>
+                  : <button className="btn btn-red" onClick={stopRecording}>Stop Recording</button>
+              }
             </div>
           )}
         />
