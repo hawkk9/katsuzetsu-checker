@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { BsFillMicFill } from 'react-icons/bs'
 import {
@@ -11,17 +10,15 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react';
-
-const ReactMediaRecorder = dynamic(() => import('react-media-recorder').then((mod) => mod.ReactMediaRecorder), {
-  ssr: false,
+import MicRecorder from 'mic-recorder-to-mp3';
+const recorder = new MicRecorder({
+  bitRate: 128
 });
-
-const canStartStatuses = ['idle', 'stopped'];
-
 
 export default function Home() {
   const [transcription, setTranscription] = useState();
-  const [script, setScript ] = useState('隣の客はよく柿食う客だ');
+  const [onRecording, setOnRecording] = useState(false);
+  const [script, setScript ] = useState('もし俺が謝ってこられてきてたとしたら、絶対に認められてたと思うか？');
 
   const renderDiffOrScriptInputArea = ({ oldText, newText }) => {
     if (newText === undefined) {
@@ -36,25 +33,43 @@ export default function Home() {
     />
   }
 
-  const onStopRecord = async (blobUrl, blob) => {
-    const file = new File(
-      [blob],
-      'voice.mp3',
-      { type: blob.type }
-    );
+  const onStartRecording = () => {
+    recorder
+      .start()
+      .then(() => {
+        setOnRecording(true);
+      }).catch((e) => {
+        console.error(e);
+      });
+  };
 
-    const formData = new FormData();
-    formData.append('file', file);
+  const onStopRecording = () => {
+    setOnRecording(false);
 
-    const response = await fetch(
-      '/api/transcription',
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
-    const json = await response.json();
-    setTranscription(json.transcription);
+    recorder
+      .stop()
+      .getMp3()
+      .then(async ([buffer, blob]) => {
+        const file = new File(buffer, 'voice.mp3', {
+          type: blob.type,
+          lastModified: Date.now()
+        });
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(
+          '/api/transcription',
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+        const json = await response.json();
+        setTranscription(json.transcription);
+      }).catch((e) => {
+        console.error(e);
+      });
   };
   const onChangeScript = (e) => {
     setScript(e.target.value);
@@ -68,34 +83,28 @@ export default function Home() {
         spacing={{ base: 8, md: 14 }}
         py={{ base: 20, md: 36 }}>
         <Text color={'gray.500'}>
-          読み上げに挑戦する言葉を入力してください。
+          読み上げに挑戦するセリフを入力してください。
         </Text>
         {renderDiffOrScriptInputArea({ oldText: script, newText: transcription })}
-        <ReactMediaRecorder
-          onStop={onStopRecord}
-          video={false}
-          render={({ status, startRecording, stopRecording, mediaBlobUrl }) => (
-            <div>
-              {
-                canStartStatuses.includes(status) ?
-                  <Button
-                    onClick={startRecording}
-                    colorScheme={'whatsapp'}
-                    leftIcon={<Icon as={BsFillMicFill} />}
-                  >
-                    読み上げ開始
-                  </Button>
-                  : <Button
-                    onClick={stopRecording}
-                    colorScheme={'red'}
-                    leftIcon={<Icon as={BsFillMicFill} />}
-                  >
-                    読み上げ終了
-                  </Button>
-              }
-            </div>
-          )}
-        />
+        <div>
+          {
+            onRecording ?
+              <Button
+                onClick={onStopRecording}
+                colorScheme={'red'}
+                leftIcon={<Icon as={BsFillMicFill} />}
+              >
+                読み上げ終了
+              </Button>
+              : <Button
+                onClick={onStartRecording}
+                colorScheme={'whatsapp'}
+                leftIcon={<Icon as={BsFillMicFill} />}
+              >
+                読み上げ開始
+              </Button>
+          }
+        </div>
       </Stack>
     </Container>
   )
