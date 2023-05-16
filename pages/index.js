@@ -28,7 +28,7 @@ const recordStatusInstructionMap = {
 }
 
 export default function Home() {
-  const [transcription, setTranscription] = useState();
+  const [transcription, setTranscription] = useState(null);
   const [recordStatus, setRecordStatus] = useState(recordStatuses.idle);
   const [script, setScript ] = useState('もし俺が謝ってこられてきてたとしたら、絶対に認められてたと思うか？');
 
@@ -42,7 +42,7 @@ export default function Home() {
   }
 
   const renderDiffOrScriptInputArea = ({ recordStatus, oldText, newText }) => {
-    if (newText === undefined) {
+    if (newText === null) {
       return <Textarea value={oldText} onChange={onChangeScript} isReadOnly={recordStatus === recordStatuses.recording} />
     }
     return <ReactDiffViewer
@@ -58,6 +58,7 @@ export default function Home() {
     recorder
       .start()
       .then(() => {
+        setTranscription(null);
         setRecordStatus(recordStatuses.recording);
       }).catch((e) => {
         console.error(e);
@@ -65,12 +66,12 @@ export default function Home() {
   };
 
   const onStopRecording = () => {
-    setRecordStatus(recordStatuses.stopped);
 
     recorder
       .stop()
       .getMp3()
       .then(async ([buffer, blob]) => {
+        setRecordStatus(recordStatuses.stopped);
         const file = new File(buffer, 'voice.mp3', {
           type: blob.type,
           lastModified: Date.now()
