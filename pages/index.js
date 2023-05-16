@@ -15,14 +15,35 @@ const recorder = new MicRecorder({
   bitRate: 128
 });
 
+const recordStatuses = {
+  idle: 'idle',
+  recording: 'recording',
+  stopped: 'stopped',
+};
+const canStartStatuses = ['idle', 'stopped'];
+const recordStatusInstructionMap = {
+  'idle': '読み上げに挑戦するセリフを入力してください。',
+  'recording': 'セリフを読み上げてください。',
+  'stopped': '結果です！',
+}
+
 export default function Home() {
   const [transcription, setTranscription] = useState();
-  const [onRecording, setOnRecording] = useState(false);
+  const [recordStatus, setRecordStatus] = useState(recordStatuses.idle);
   const [script, setScript ] = useState('もし俺が謝ってこられてきてたとしたら、絶対に認められてたと思うか？');
 
-  const renderDiffOrScriptInputArea = ({ oldText, newText }) => {
+  const renderInstructionText = ({ recordStatus }) => {
+    const instruction = recordStatusInstructionMap[recordStatus];
+    return (
+      <Text color={'gray.500'}>
+        {instruction}
+      </Text>
+    )
+  }
+
+  const renderDiffOrScriptInputArea = ({ recordStatus, oldText, newText }) => {
     if (newText === undefined) {
-      return <Textarea value={oldText} onChange={onChangeScript} />
+      return <Textarea value={oldText} onChange={onChangeScript} isReadOnly={recordStatus === recordStatuses.recording} />
     }
     return <ReactDiffViewer
       oldValue={oldText}
@@ -37,14 +58,14 @@ export default function Home() {
     recorder
       .start()
       .then(() => {
-        setOnRecording(true);
+        setRecordStatus(recordStatuses.recording);
       }).catch((e) => {
         console.error(e);
       });
   };
 
   const onStopRecording = () => {
-    setOnRecording(false);
+    setRecordStatus(recordStatuses.stopped);
 
     recorder
       .stop()
@@ -82,26 +103,24 @@ export default function Home() {
         textAlign={'center'}
         spacing={{ base: 8, md: 14 }}
         py={{ base: 20, md: 36 }}>
-        <Text color={'gray.500'}>
-          読み上げに挑戦するセリフを入力してください。
-        </Text>
-        {renderDiffOrScriptInputArea({ oldText: script, newText: transcription })}
+        {renderInstructionText({ recordStatus })}
+        {renderDiffOrScriptInputArea({ recordStatus, oldText: script, newText: transcription })}
         <div>
           {
-            onRecording ?
+            canStartStatuses.includes(recordStatus) ?
               <Button
-                onClick={onStopRecording}
-                colorScheme={'red'}
-                leftIcon={<Icon as={BsFillMicFill} />}
-              >
-                読み上げ終了
-              </Button>
-              : <Button
                 onClick={onStartRecording}
                 colorScheme={'whatsapp'}
                 leftIcon={<Icon as={BsFillMicFill} />}
               >
                 読み上げ開始
+              </Button>
+              : <Button
+                onClick={onStopRecording}
+                colorScheme={'red'}
+                leftIcon={<Icon as={BsFillMicFill} />}
+              >
+                読み上げ終了
               </Button>
           }
         </div>
