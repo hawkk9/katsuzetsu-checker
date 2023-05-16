@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
+import { AiFillEdit } from 'react-icons/ai'
 import { BsFillMicFill } from 'react-icons/bs'
 import {
-  Box,
-  Container,
-  Textarea,
   Button,
-  Stack,
+  Box,
+  Center,
+  Container,
+  HStack,
   Icon,
+  Textarea,
+  Stack,
   Text,
 } from '@chakra-ui/react';
 import MicRecorder from 'mic-recorder-to-mp3';
@@ -31,6 +34,7 @@ export default function Home() {
   const [transcription, setTranscription] = useState(null);
   const [recordStatus, setRecordStatus] = useState(recordStatuses.idle);
   const [script, setScript ] = useState('もし俺が謝ってこられてきてたとしたら、絶対に認められてたと思うか？');
+  const [scriptEditing, setScriptEditing ] = useState(false);
 
   const renderInstructionText = ({ recordStatus }) => {
     const instruction = recordStatusInstructionMap[recordStatus];
@@ -54,7 +58,7 @@ export default function Home() {
     />
   }
 
-  const onStartRecording = () => {
+  const onClickStartRecording = () => {
     recorder
       .start()
       .then(() => {
@@ -65,8 +69,7 @@ export default function Home() {
       });
   };
 
-  const onStopRecording = () => {
-
+  const onClickStopRecording = () => {
     recorder
       .stop()
       .getMp3()
@@ -97,6 +100,11 @@ export default function Home() {
     setScript(e.target.value);
   };
 
+  const onClickEditScript = () => {
+    setRecordStatus(recordStatuses.idle);
+    setTranscription(null);
+  };
+
   return (
     <Container maxW={'3xl'}>
       <Stack
@@ -106,25 +114,35 @@ export default function Home() {
         py={{ base: 20, md: 36 }}>
         {renderInstructionText({ recordStatus })}
         {renderDiffOrScriptInputArea({ recordStatus, oldText: script, newText: transcription })}
-        <div>
-          {
+        <Center>
+          <HStack spacing='24px'>
+            {
             canStartStatuses.includes(recordStatus) ?
               <Button
-                onClick={onStartRecording}
+                onClick={onClickStartRecording}
                 colorScheme={'whatsapp'}
                 leftIcon={<Icon as={BsFillMicFill} />}
               >
                 読み上げ開始
               </Button>
-              : <Button
-                onClick={onStopRecording}
+              :
+              <Button
+                onClick={onClickStopRecording}
                 colorScheme={'red'}
                 leftIcon={<Icon as={BsFillMicFill} />}
               >
                 読み上げ終了
               </Button>
-          }
-        </div>
+            }
+            {recordStatus === recordStatuses.stopped ?
+              <Button
+                onClick={onClickEditScript}
+                leftIcon={<Icon as={AiFillEdit} />}
+              >
+                セリフ変更
+              </Button> : null}
+          </HStack>
+        </Center>
       </Stack>
     </Container>
   )
