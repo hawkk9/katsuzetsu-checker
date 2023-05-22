@@ -6,6 +6,7 @@ import ReactDiffViewer from "react-diff-viewer-continued";
 import MicRecorder from "mic-recorder-to-mp3";
 import Idle from "@/components/idle";
 import {RecordStatus} from "@/lib/constants"
+import Recording from "@/components/recording";
 
 const recorder = new MicRecorder({
   bitRate: 128
@@ -92,8 +93,11 @@ const Checker = () => {
     setTranscription(null);
   };
 
-  if (recordStatus === RecordStatus.idle) {
-    return <Idle onChangeScript={onChangeScript} onClickStartRecording={onClickStartRecording} script={script} />
+  switch (recordStatus) {
+    case  RecordStatus.idle:
+      return <Idle onChangeScript={onChangeScript} onClickStartRecording={onClickStartRecording} script={script} />
+    case RecordStatus.recording:
+      return <Recording onClickStopRecording={onClickStopRecording} script={script} />
   }
 
   return (
