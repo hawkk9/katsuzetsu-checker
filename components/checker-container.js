@@ -1,5 +1,6 @@
 import {Box, Container, Stack} from "@chakra-ui/react";
 import Checker from "@/components/checker";
+import {MarkGithubIcon} from '@primer/octicons-react'
 
 const CheckerContainer = () => {
 
@@ -12,6 +13,14 @@ const CheckerContainer = () => {
         py={{ base: 20, md: 36 }}
       >
         <Checker />
+      </Stack>
+      <Stack
+        as={Box}
+        textAlign={'center'}
+      >
+        <a href='https://github.com/hawkk9/katsuzetsu-checker' target='_blank'>
+          <MarkGithubIcon size={24} />
+        </a>
       </Stack>
     </Container>
   )
